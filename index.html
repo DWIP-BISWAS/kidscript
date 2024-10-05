@@ -1,56 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KidScript IDE</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Kidscript</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<h1>KidScript IDE</h1>
-
-<!-- Header with Tabs -->
-<div id="header">
-    <div class="tab active" id="tab-run">Run</div>
-    <div class="tab" id="tab-learn">Learn About</div>
-    <div class="tab" id="tab-contact">Contact</div>
-</div>
-
-<!-- Code Editor Section -->
-<div id="editor" class="active">
-    <h2>Write Your KidScript Code Below</h2>
-    <textarea id="code" placeholder="Write KidScript code here..."></textarea>
-    <br>
-    <button onclick="runKidScript()">Run</button>
-    <button onclick="saveCode()">Save</button>
-    <button onclick="loadCode()">Load</button>
-    <div id="output"></div>
-
-    <!-- Cartoon Character -->
-    <div class="cartoon"></div>
-    <div class="error-message" id="error-msg">Oops! There's a problem with your code!</div>
-</div>
-
-<!-- Learning Tab Section -->
-<div id="learning">
-    <h2>Learn How to Write KidScript!</h2>
-    <p>KidScript is easy! Here are some simple commands to get started:</p>
-    <ul>
-        <li><strong>make</strong>: Create a variable. Example: <code>make number 5</code></li>
-        <li><strong>show</strong>: Display something. Example: <code>show number</code></li>
-        <li><strong>repeat</strong>: Repeat an action. Example: <code>repeat 5 times show "*"</code></li>
-        <li>Combine variables and strings: <code>show "I love " + name</code></li>
-    </ul>
-</div>
-
-<!-- Contact Tab Section -->
-<div id="contact">
-    <h2>Contact Us</h2>
-    <p>If you have any questions, feel free to contact us at <strong>kidScript@learncoding.com</strong>.</p>
-</div>
-
-<script src="script.js"></script>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#ide">Run</a></li>
+                <li><a href="#learn">Learn</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="ide">
+            <h2>IDE</h2>
+            <textarea id="code-editor"></textarea>
+            <button id="run-button">Run</button>
+            <pre id="output-area"></pre>
+        </section>
+        <section id="learn">
+            <h2>Learn</h2>
+            <div class="tutorial-step">
+                <h3>Step 1: Variables</h3>
+                <p>Variables store values.</p>
+                <code class="code-example">let name = "Alice";</code>
+            </div>
+            <div class="tutorial-step">
+                <h3>Step 2: Input</h3>
+                <p>Get input from the user.</p>
+                <code class="code-example">ask "What is your name?";</code>
+            </div>
+            <div class="tutorial-step">
+                <h3>Step 3: Print</h3>
+                <p>Display output.</p>
+                <code class="code-example">say "Hello, " + name;</code>
+            </div>
+            <div class="tutorial-step">
+                <h3>Step 4: Loops</h3>
+                <p>Repeat a block of code multiple times.</p>
+                <code class="code-example">repeat 5 times {
+                    say "Counting...";
+                };</code>
+            </div>
+        </section>
+        <section id="about">
+            <h2>About Kidscript</h2>
+            <p>Kidscript is a simple and fun programming language designed for kids.</p>
+        </section>
+        <section id="contact">
+            <h2>Contact</h2>
+            <p>Email: dwipbiswas22972@gmail.com</p>
+            <p>Phone: 9064582007</p>
+        </section>
+    </main>
+    <footer>
+        <p>© Kidscript 2024</p>
+    </footer>
+    <script src="script.js"></script>
 </body>
     </html>
-    
