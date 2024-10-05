@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidScript IDE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+        }
+        h1 {
+            text-align: center;
+            color: #3a3a3a;
+            padding: 10px;
+            background-color: #ffcc80;
+        }
+        #tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 10px;
+            background-color: #f2a07b;
+            padding: 10px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background-color: #ffcc80;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .tab.active {
+            background-color: #f7a55c;
+            font-weight: bold;
+        }
+        #editor, #learning {
+            display: none;
+            padding: 20px;
+        }
+        #editor.active, #learning.active {
+            display: block;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            font-size: 18px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #output {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>KidScript IDE</h1>
+
+<div id="tabs">
+    <div class="tab active" id="tab-editor">Code Editor</div>
+    <div class="tab" id="tab-learning">Learn KidScript</div>
+</div>
+
+<!-- Code Editor Section -->
+<div id="editor" class="active">
+    <h2>Write Your KidScript Code Below</h2>
+    <textarea id="code" placeholder="Write KidScript code here..."></textarea>
+    <br>
+    <button onclick="runKidScript()">Run</button>
+    <button onclick="debugKidScript()">Debug</button>
+    <button onclick="saveCode()">Save</button>
+    <button onclick="loadCode()">Load</button>
+    <div id="output"></div>
+</div>
+
+<!-- Learning Tab Section -->
+<div id="learning">
+    <h2>Learn How to Write KidScript!</h2>
+    <p>KidScript is easy! Here are some simple commands to get started:</p>
+    <ul>
+        <li><strong>make</strong>: Create a variable. Example: <code>make number 5</code></li>
+        <li><strong>show</strong>: Display something. Example: <code>show number</code></li>
+        <li><strong>repeat</strong>: Repeat an action. Example: <code>repeat 5 times show "*"</code></li>
+        <li>Combine variables and strings: <code>show "I love " + name</code></li>
+    </ul>
+</div>
+
+<script>
+    // Tab navigation
+    document.getElementById('tab-editor').onclick = function() {
+        document.getElementById('editor').classList.add('active');
+        document.getElementById('learning').classList.remove('active');
+        this.classList.add('active');
+        document.getElementById('tab-learning').classList.remove('active');
+    };
+
+    document.getElementById('tab-learning').onclick = function() {
+        document.getElementById('learning').classList.add('active');
+        document.getElementById('editor').classList.remove('active');
+        this.classList.add('active');
+        document.getElementById('tab-editor').classList.remove('active');
+    };
+
+    // KidScript interpreter
+    function runKidScript() {
+        let code = document.getElementById('code').value;
+        let output = document.getElementById('output');
+        output.innerHTML = ''; // Clear previous output
+
+        let variables = {};
+        const lines = code.split('\n');
+
+        try {
+            for (let line of lines) {
+                const words = line.trim().split(' ');
+
+                if (words[0] === 'make') {
+                    let varName = words[1];
+                    let value = words.slice(2).join(' ');
+                    variables[varName] = isNaN(value) ? value : parseInt(value);
+                } else if (words[0] === 'show') {
+                    let displayValue = words.slice(1).join(' ');
+                    displayValue = displayValue.replace(/([a-zA-Z_][a-zA-Z0-9_]*)/g, function(match) {
+                        return variables[match] !== undefined ? variables[match] : match;
+                    });
+                    output.innerHTML += displayValue + '<br>';
+                } else if (words[0] === 'repeat') {
+                    let times = parseInt(words[1]);
+                    let repeatCommand = words.slice(3).join(' ');
+                    for (let i = 0; i < times; i++) {
+                        let repeatOutput = repeatCommand.replace(/([a-zA-Z_][a-zA-Z0-9_]*)/g, function(match) {
+                            return variables[match] !== undefined ? variables[match] : match;
+                        });
+                        output.innerHTML += repeatOutput + '<br>';
+                    }
+                }
+            }
+        } catch (error) {
+            output.innerHTML = 'Error: ' + error.message;
+        }
+    }
+
+    // Save and Load code using local storage
+    function saveCode() {
+        const code = document.getElementById('code').value;
+        localStorage.setItem('kidScriptCode', code);
+        alert('Code saved!');
+    }
+
+    function loadCode() {
+        const savedCode = localStorage.getItem('kidScriptCode');
+        if (savedCode) {
+            document.getElementById('code').value = savedCode;
+        } else {
+            alert('No saved code found!');
+        }
+    }
+
+    // Debugging (for future improvements)
+    function debugKidScript() {
+        alert('Debugging feature is coming soon!');
+    }
+</script>
+
+</body>
+  </html>
+  
