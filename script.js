@@ -1,142 +1,93 @@
-// Tab navigation
-document.getElementById('tab-run').onclick = function() {
-    document.getElementById('editor').classList.add('active');
-    document.getElementById('learning').classList.remove('active');
-    document.getElementById('contact').classList.remove('active');
-    this.classList.add('active');
-    document.getElementById('tab-learn').classList.remove('active');
-    document.getElementById('tab-contact').classList.remove('active');
-};
+const codeEditor = document.getElementById('code-editor');
+const runButton = document.getElementById('run-button');
+const outputArea = document.getElementById('output-area');
 
-document.getElementById('tab-learn').onclick = function() {
-    document.getElementById('learning').classList.add('active');
-    document.getElementById('editor').classList.remove('active');
-    document.getElementById('contact').classList.remove('active');
-    this.classList.add('active');
-    document.getElementById('tab-run').classList.remove('active');
-    document.getElementById('tab-contact').classList.remove('active');
-};
+// Initialize the code editor (e.g., using Ace or CodeMirror)
 
-document.getElementById('tab-contact').onclick = function() {
-    document.getElementById('contact').classList.add('active');
-    document.getElementById('editor').classList.remove('active');
-    document.getElementById('learning').classList.remove('active');
-    this.classList.add('active');
-    document.getElementById('tab-run').classList.remove('active');
-    document.getElementById('tab-learn').classList.remove('active');
-};
-
-// KidScript interpreter
-function runKidScript() {
-    let code = document.getElementById('code').value;
-    let output = document.getElementById('output');
-    let errorMsg = document.getElementById('error-msg');
-    output.innerHTML = ''; // Clear previous output
-    errorMsg.style.display = 'none'; // Hide error message
-
-    let variables = {};
-    const lines = code.split('\n');
+runButton.addEventListener('click', () => {
+    const code = codeEditor.value;
 
     try {
-        for (let line of lines) {
-            const words = line.trim().split(' ');
-
-            if (words[0] === 'make') {
-                let varName = words[1];
-                let value = words.slice(2).join(' ');
-                variables[varName] = isNaN(value) ? value.replace(/["']/g, '') : parseInt(value);
-            } else if (words[0] === 'show') {
-                let displayValue = words.slice(1).join(' ');
-                displayValue = displayValue.replace(/([a-zA-Z_][a-zA-Z0-9_]*)/g, function(match) {
-                    return variables[match] !== undefined ? variables[match] : match;
-                });
-                output.innerHTML += displayValue + '<br>';
-            } else if (words[0] === 'repeat') {
-                let times = parseInt(words[1]);
-                let repeatCommand = words.slice(3).join(' ');
-                for (let i = 0; i < times; i++) {
-                    let repeatOutput = repeatCommand.replace(/([a-zA-Z_][a-zA-Z0-9_]*)/g, function(match) {
-                        return variables[match] !== undefined ? variables[match] : match;
-                    });
-                    output.innerHTML += repeatOutput + '<br>';
-                }
-            }
-        }
+        const ast = parse(code);
+        const result = execute(ast);
+        outputArea.textContent = result;
     } catch (error) {
-        // Show error message and cartoon character
-        errorMsg.innerHTML = 'Oops! There was a problem: ' + error.message;
-        errorMsg.style.display = 'block';
+        let errorMessage;
+        if (error instanceof SyntaxError) {
+            errorMessage = "Oops! It looks like you forgot to close a quote.";
+        } else if (error instanceof ReferenceError) {
+            errorMessage = "Uh-oh! You tried to use a variable that doesn't exist.";
+        } else if (error instanceof TypeError) {
+            errorMessage = "That doesn't make sense! You can't add a number to a word.";
+        } else {
+            errorMessage = "Something went wrong. Try checking your code for mistakes.";
+        }
+        outputArea.textContent = `Error: ${errorMessage}`;
     }
+});
+
+function parse(code) {
+    // Tokenize the code into individual words or symbols
+    const tokens = tokenize(code);
+
+    // Parse the tokens into an abstract syntax tree (AST)
+    const parser = new Parser(tokens);
+    const ast = parser.parse();
+
+    return ast;
 }
 
-// Save and Load code using local storage
-function saveCode() {
-    const code = document.getElementById('code').value;
-    localStorage.setItem('kidScriptCode', code);
-    alert('Code saved!');
+function execute(ast) {
+    const variables = {};
+    const functions = {};
+
+    // Execute the AST
+    for (const statement of ast) {
+        if (statement.type === "VariableDeclaration") {
+            variables[statement.identifier] = statement.value;
+        } else if (statement.type === "FunctionDeclaration") {
+            functions[statement.identifier] = statement.body;
+        } else if (statement.type === "ExpressionStatement") {
+            evaluateExpression(statement.expression, variables, functions);
+        }
+    }
+
+    return variables;
 }
 
-function loadCode() {
-    const savedCode = localStorage.getItem('kidScriptCode');
-    if (savedCode) {
-        document.getElementById('code').value = savedCode;
+function evaluateExpression(expression, variables, functions) {
+    if (expression.type === "Identifier") {
+        return variables[expression.name];
+    } else if (expression.type === "Literal") {
+        return expression.value;
+    } else if (expression.type === "BinaryExpression") {
+        const left = evaluateExpression(expression.left, variables, functions);
+        const right = evaluateExpression(expression.right, variables, functions);
+        switch (expression.operator) {
+            case "+": return left + right;
+            case "-": return left - right;
+            case "*": return left * right;
+            case "/": return left / right;
+            case "%": return left % right;
+            case "==": return left == right;
+            case "!=": return left != right;
+            case "<": return left < right;
+            case ">": return left > right;
+            case "<=": return left <= right;
+            case ">=": return left >= right;
+            case "&&": return left && right;
+            case "||": return left || right;
+        }
+    } else if (expression.type === "CallExpression") {
+        const func = functions[expression.callee.name];
+        const args = expression.arguments.map(arg => evaluateExpression(arg, variables, functions));
+        return func.apply(null, args);
     } else {
-        alert('No saved code found.');
+        throw new Error("Unknown expression type");
     }
-      }
-
-// Tab navigation code...
-
-// KidScript interpreter
-function runKidScript() {
-    let code = document.getElementById('code').value;
-    let output = document.getElementById('output');
-    let errorMsg = document.getElementById('error-msg');
-    output.innerHTML = ''; // Clear previous output
-    errorMsg.style.display = 'none'; // Hide error message
-
-    let variables = {};
-    const commands = code.split('\n');
-
-    try {
-        commands.forEach(command => {
-            const trimmedCommand = command.trim();
-
-            if (trimmedCommand.startsWith("create")) {
-                const [_, tag, attributes] = trimmedCommand.match(/create (\w+) with (.+)/);
-                const element = document.createElement(tag);
-                const attrs = JSON.parse(attributes.replace(/(\w+):/g, '"$1":').replace(/'/g, '"'));
-                Object.keys(attrs).forEach(attr => element.setAttribute(attr, attrs[attr]));
-                document.body.appendChild(element);
-                variables[tag] = element; // Store the created element in variables
-            } else if (trimmedCommand.startsWith("set")) {
-                const [_, elementId, text] = trimmedCommand.match(/set (\w+) text to "(.+)"/);
-                const element = variables[elementId];
-                if (element) {
-                    element.innerText = text;
-                }
-            } else if (trimmedCommand.startsWith("style")) {
-                const [_, elementId, styles] = trimmedCommand.match(/style (\w+) with (.+)/);
-                const element = variables[elementId];
-                const styleObj = JSON.parse(styles.replace(/(\w+):/g, '"$1":').replace(/'/g, '"'));
-                Object.assign(element.style, styleObj);
-            } else if (trimmedCommand.startsWith("on")) {
-                const [_, elementId, event, func] = trimmedCommand.match(/on (\w+) event (\w+) do { (.+) }/);
-                const element = variables[elementId];
-                if (element) {
-                    element.addEventListener(event, eval(func));
-                }
-            } else if (trimmedCommand.startsWith("append")) {
-                const [_, childId, parentId] = trimmedCommand.match(/append (\w+) to (\w+)/);
-                const child = variables[childId];
-                const parent = variables[parentId];
-                if (child && parent) {
-                    parent.appendChild(child);
-                }
-            }
-        });
-    }  
 }
 
-// Save and Load code functions...
-        
+// Parser class (implementation omitted for brevity)
+class Parser {
+    // ... Parsing logic ...
+    }
