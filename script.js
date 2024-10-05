@@ -84,3 +84,59 @@ function loadCode() {
         alert('No saved code found.');
     }
       }
+
+// Tab navigation code...
+
+// KidScript interpreter
+function runKidScript() {
+    let code = document.getElementById('code').value;
+    let output = document.getElementById('output');
+    let errorMsg = document.getElementById('error-msg');
+    output.innerHTML = ''; // Clear previous output
+    errorMsg.style.display = 'none'; // Hide error message
+
+    let variables = {};
+    const commands = code.split('\n');
+
+    try {
+        commands.forEach(command => {
+            const trimmedCommand = command.trim();
+
+            if (trimmedCommand.startsWith("create")) {
+                const [_, tag, attributes] = trimmedCommand.match(/create (\w+) with (.+)/);
+                const element = document.createElement(tag);
+                const attrs = JSON.parse(attributes.replace(/(\w+):/g, '"$1":').replace(/'/g, '"'));
+                Object.keys(attrs).forEach(attr => element.setAttribute(attr, attrs[attr]));
+                document.body.appendChild(element);
+                variables[tag] = element; // Store the created element in variables
+            } else if (trimmedCommand.startsWith("set")) {
+                const [_, elementId, text] = trimmedCommand.match(/set (\w+) text to "(.+)"/);
+                const element = variables[elementId];
+                if (element) {
+                    element.innerText = text;
+                }
+            } else if (trimmedCommand.startsWith("style")) {
+                const [_, elementId, styles] = trimmedCommand.match(/style (\w+) with (.+)/);
+                const element = variables[elementId];
+                const styleObj = JSON.parse(styles.replace(/(\w+):/g, '"$1":').replace(/'/g, '"'));
+                Object.assign(element.style, styleObj);
+            } else if (trimmedCommand.startsWith("on")) {
+                const [_, elementId, event, func] = trimmedCommand.match(/on (\w+) event (\w+) do { (.+) }/);
+                const element = variables[elementId];
+                if (element) {
+                    element.addEventListener(event, eval(func));
+                }
+            } else if (trimmedCommand.startsWith("append")) {
+                const [_, childId, parentId] = trimmedCommand.match(/append (\w+) to (\w+)/);
+                const child = variables[childId];
+                const parent = variables[parentId];
+                if (child && parent) {
+                    parent.appendChild(child);
+                }
+            }
+        });
+    }  
+}
+
+// Save and Load code functions...
+        
