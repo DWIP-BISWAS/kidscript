@@ -17,12 +17,12 @@
             padding: 10px;
             background-color: #ffcc80;
         }
-        #tabs {
+        #header {
             display: flex;
             justify-content: space-around;
-            margin-bottom: 10px;
-            background-color: #f2a07b;
+            background-color: #ffcc80;
             padding: 10px;
+            border-bottom: 2px solid #f2a07b;
         }
         .tab {
             padding: 10px 20px;
@@ -30,15 +30,14 @@
             cursor: pointer;
             border-radius: 5px;
         }
-        .tab.active {
+        .tab:hover {
             background-color: #f7a55c;
-            font-weight: bold;
         }
-        #editor, #learning {
+        #editor, #learning, #contact {
             display: none;
             padding: 20px;
         }
-        #editor.active, #learning.active {
+        #editor.active, #learning.active, #contact.active {
             display: block;
         }
         textarea {
@@ -69,15 +68,37 @@
             margin-top: 20px;
             border-radius: 10px;
         }
+        /* Cartoon character styles */
+        .cartoon {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            background-image: url('https://i.imgur.com/O5k4byZ.png');
+            background-size: cover;
+            margin: 20px auto;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
 <h1>KidScript IDE</h1>
 
-<div id="tabs">
-    <div class="tab active" id="tab-editor">Code Editor</div>
-    <div class="tab" id="tab-learning">Learn KidScript</div>
+<!-- Header with Tabs -->
+<div id="header">
+    <div class="tab active" id="tab-run">Run</div>
+    <div class="tab" id="tab-learn">Learn About</div>
+    <div class="tab" id="tab-contact">Contact</div>
 </div>
 
 <!-- Code Editor Section -->
@@ -86,10 +107,13 @@
     <textarea id="code" placeholder="Write KidScript code here..."></textarea>
     <br>
     <button onclick="runKidScript()">Run</button>
-    <button onclick="debugKidScript()">Debug</button>
     <button onclick="saveCode()">Save</button>
     <button onclick="loadCode()">Load</button>
     <div id="output"></div>
+
+    <!-- Cartoon Character -->
+    <div class="cartoon"></div>
+    <div class="error-message" id="error-msg">Oops! There's a problem with your code!</div>
 </div>
 
 <!-- Learning Tab Section -->
@@ -104,27 +128,48 @@
     </ul>
 </div>
 
+<!-- Contact Tab Section -->
+<div id="contact">
+    <h2>Contact Us</h2>
+    <p>If you have any questions, feel free to contact us at <strong>kidScript@learncoding.com</strong>.</p>
+</div>
+
 <script>
     // Tab navigation
-    document.getElementById('tab-editor').onclick = function() {
+    document.getElementById('tab-run').onclick = function() {
         document.getElementById('editor').classList.add('active');
         document.getElementById('learning').classList.remove('active');
+        document.getElementById('contact').classList.remove('active');
         this.classList.add('active');
-        document.getElementById('tab-learning').classList.remove('active');
+        document.getElementById('tab-learn').classList.remove('active');
+        document.getElementById('tab-contact').classList.remove('active');
     };
 
-    document.getElementById('tab-learning').onclick = function() {
+    document.getElementById('tab-learn').onclick = function() {
         document.getElementById('learning').classList.add('active');
         document.getElementById('editor').classList.remove('active');
+        document.getElementById('contact').classList.remove('active');
         this.classList.add('active');
-        document.getElementById('tab-editor').classList.remove('active');
+        document.getElementById('tab-run').classList.remove('active');
+        document.getElementById('tab-contact').classList.remove('active');
+    };
+
+    document.getElementById('tab-contact').onclick = function() {
+        document.getElementById('contact').classList.add('active');
+        document.getElementById('editor').classList.remove('active');
+        document.getElementById('learning').classList.remove('active');
+        this.classList.add('active');
+        document.getElementById('tab-run').classList.remove('active');
+        document.getElementById('tab-learn').classList.remove('active');
     };
 
     // KidScript interpreter
     function runKidScript() {
         let code = document.getElementById('code').value;
         let output = document.getElementById('output');
+        let errorMsg = document.getElementById('error-msg');
         output.innerHTML = ''; // Clear previous output
+        errorMsg.style.display = 'none'; // Hide error message
 
         let variables = {};
         const lines = code.split('\n');
@@ -136,13 +181,13 @@
                 if (words[0] === 'make') {
                     let varName = words[1];
                     let value = words.slice(2).join(' ');
-                    variables[varName] = isNaN(value) ? value : parseInt(value);
+                    variables[varName] = isNaN(value) ? value.replace(/["']/g, '') : parseInt(value);
                 } else if (words[0] === 'show') {
                     let displayValue = words.slice(1).join(' ');
                     displayValue = displayValue.replace(/([a-zA-Z_][a-zA-Z0-9_]*)/g, function(match) {
                         return variables[match] !== undefined ? variables[match] : match;
                     });
-                    output.innerHTML += displayValue + '<br>';
+                    output.innerHTML += eval(displayValue.replace(/\+/, ' + ')) + '<br>';
                 } else if (words[0] === 'repeat') {
                     let times = parseInt(words[1]);
                     let repeatCommand = words.slice(3).join(' ');
@@ -155,7 +200,9 @@
                 }
             }
         } catch (error) {
-            output.innerHTML = 'Error: ' + error.message;
+            // Show error message and cartoon character
+            errorMsg.innerHTML = 'Oops! There was a problem: ' + error.message;
+            errorMsg.style.display = 'block';
         }
     }
 
@@ -171,16 +218,11 @@
         if (savedCode) {
             document.getElementById('code').value = savedCode;
         } else {
-            alert('No saved code found!');
+            alert('No saved code found.');
         }
-    }
-
-    // Debugging (for future improvements)
-    function debugKidScript() {
-        alert('Debugging feature is coming soon!');
     }
 </script>
 
 </body>
-  </html>
-  
+    </html>
+    
